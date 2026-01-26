@@ -1,20 +1,17 @@
-
-
 /*Card*/
-.card {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
+.card,
 .card-foil {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .card-foil::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -36,7 +33,7 @@
 }
 
 .card-foil::after {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   left: -50%;
@@ -83,4 +80,8 @@
 .card-foil p {
   position: relative;
   z-index: 3;
+}
+
+.card-container {
+  perspective: 500px; /* distance from the viewer for 3D effect */
 }
