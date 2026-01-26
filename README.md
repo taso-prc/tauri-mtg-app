@@ -1,5 +1,7 @@
 # Description
 Simple [Tauri](https://v2.tauri.app/) demo app that fetches Magic The Gathering cards from [Scryfall](https://scryfall.com/docs/api).
+Initially fetches cards from FCA set.
+Supports fetching cards with partial name matching.
 
 ### Stack:
 - Tauri
