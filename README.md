@@ -1,3 +1,5 @@
+# ! Work in progress !
+
 # Description
 Simple [Tauri](https://v2.tauri.app/) demo app that fetches Magic The Gathering cards from [Scryfall](https://scryfall.com/docs/api).
 
