@@ -8,14 +8,14 @@ interface Drawer {
 
 export interface QueryParameters {
   searchString: string;
-  power: number;
+  power?: number;
 }
 
 const Drawer: React.FC<Drawer> = ({ onSearch }) => {
   const [visible, setVisible] = useState<boolean>(false);
   const [queryParameters, setQueryParameters] = useState<QueryParameters>({
     searchString: "",
-    power: 0,
+    power: undefined,
   });
 
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -72,7 +72,7 @@ const Drawer: React.FC<Drawer> = ({ onSearch }) => {
           onChange={(e) => {
             const newQueryParameters = {
               ...queryParameters,
-              power: Number.parseInt(e.target.value) || 0,
+              power: e.target.value ? Number.parseInt(e.target.value) : undefined,
             };
             setQueryParameters(newQueryParameters);
             onSearch(newQueryParameters);

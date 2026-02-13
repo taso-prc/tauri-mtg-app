@@ -6,8 +6,9 @@ interface CardProps {
   title?: string;
   imageUrl?: string;
   foil?: boolean;
+  enableFoilEffect?: boolean;
 }
-const Card: React.FC<CardProps> = ({ title = "", imageUrl, foil = false }) => {
+const Card: React.FC<CardProps> = ({ title = "", imageUrl, foil = false, enableFoilEffect = false }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [localImagePath, setLocalImagePath] = useState<string>("");
 
@@ -52,7 +53,7 @@ const Card: React.FC<CardProps> = ({ title = "", imageUrl, foil = false }) => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <div className={`card ${foil ? "card-foil" : ""}`} ref={cardRef}>
+      <div className={`card ${foil && enableFoilEffect ? "card-foil" : ""}`} ref={cardRef}>
           {localImagePath && (
           <>
             <img

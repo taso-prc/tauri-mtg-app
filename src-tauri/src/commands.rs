@@ -47,20 +47,27 @@ pub async fn fetch_cards() -> Result<Vec<Card>, String> {
 #[derive(Debug, Deserialize)]
 pub struct QP {
     pub searchString: String,
-    pub power: Number,
+    pub power: Option<Number>,
 }
 
 /// Fetch cards using fulltext search system.
 /// https://scryfall.com/docs/api/cards/search
 #[tauri::command]
-pub async fn fetch_cards_by_partial_name(query_parameters: QP) -> Result<Vec<Card>, String> {
+pub async fn fetch_cards_by_parameters(query_parameters: QP) -> Result<Vec<Card>, String> {
     let client = reqwest::Client::new();
     let config = load_config()?;
-    let request_url = format!(
-        "{}/cards/search?q={}+pow%3D{} ",
-        config.base_path, query_parameters.searchString, query_parameters.power
+    let mut request_url = format!(
+        "{}/cards/search?q={}",
+        config.base_path, query_parameters.searchString
     );
 
+    // Check if power is present and is an integer, append to request_url: +pow%3D{}
+    if let Some(power) = &query_parameters.power {
+        if power.is_i64() {
+            request_url.push_str(&format!("+pow%3D{}", power.as_i64().unwrap()));
+        }
+    }
+    println!("Request URL: {}", request_url);
     let response = client
         .get(&request_url)
         .header("User-Agent", "TauriMTGApp/1.0")
@@ -85,7 +92,6 @@ pub async fn fetch_cards_by_partial_name(query_parameters: QP) -> Result<Vec<Car
 
 #[tauri::command]
 pub async fn get_cached_image(app: AppHandle, url: String) -> Result<String, String> {
-    println!("get_cached_image called with URL: {}", url);
     let cache_dir = app.path().app_data_dir()
         .map_err(|e| e.to_string())?
         .join("cache")
@@ -108,12 +114,9 @@ pub async fn get_cached_image(app: AppHandle, url: String) -> Result<String, Str
     let filename = format!("{:x}.{}", hasher.finalize(), extension);
 
     let path: PathBuf = cache_dir.join(filename);
-    println!("Cache path: {:?}", path);
 
     // If file doesn't exist, download and save it
     if !path.exists() {
-        println!("File not in cache, downloading from: {}", url);
-        
         let client = reqwest::Client::new();
         let response = client
             .get(&url)
@@ -133,10 +136,6 @@ pub async fn get_cached_image(app: AppHandle, url: String) -> Result<String, Str
 
         fs::write(&path, bytes)
             .map_err(|e| format!("Failed to save image to cache: {}", e))?;
-
-        println!("Image saved to cache: {:?}", path);
-    } else {
-        println!("Image found in cache");
     }
 
     // Read the image file and convert to base64 data URL
@@ -154,7 +153,5 @@ pub async fn get_cached_image(app: AppHandle, url: String) -> Result<String, Str
     
     let data_url = format!("data:{};base64,{}", mime_type, base64_data);
     
-    println!("Returning base64 data URL with {} bytes", image_bytes.len());
-
     Ok(data_url)
 }
