@@ -11,7 +11,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, commands::fetch_cards, commands::fetch_cards_by_partial_name])
+        .invoke_handler(tauri::generate_handler![greet, commands::fetch_cards, commands::fetch_cards_by_partial_name, commands::get_cached_image])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

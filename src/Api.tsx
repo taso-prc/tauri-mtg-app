@@ -17,3 +17,9 @@ export async function loadCardsByPartialName(
 
   return response;
 }
+
+export async function getCachedImage(url: string): Promise<string> {
+  const response = await invoke<string>("get_cached_image", { url });
+  
+  return response;
+}

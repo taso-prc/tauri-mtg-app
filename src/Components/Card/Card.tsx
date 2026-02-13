@@ -1,14 +1,27 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./Card.css";
+import { invoke } from "@tauri-apps/api/core";
 
 interface CardProps {
   title?: string;
   imageUrl?: string;
   foil?: boolean;
 }
-
 const Card: React.FC<CardProps> = ({ title = "", imageUrl, foil = false }) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [localImagePath, setLocalImagePath] = useState<string>("");
+
+  useEffect(() => {
+    if (imageUrl) { 
+      invoke<string>("get_cached_image", {
+        url: imageUrl
+      }).then((dataUrl) => {
+        setLocalImagePath(dataUrl);
+      }).catch(() => {
+        console.error("Failed to get cached image");
+      });
+    }
+  }, [imageUrl]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!cardRef.current) return;
@@ -40,10 +53,10 @@ const Card: React.FC<CardProps> = ({ title = "", imageUrl, foil = false }) => {
       onMouseLeave={handleMouseLeave}
     >
       <div className={`card ${foil ? "card-foil" : ""}`} ref={cardRef}>
-        {imageUrl && (
+          {localImagePath && (
           <>
             <img
-              src={imageUrl}
+              src={localImagePath}
               alt={title}
               style={{
                 width: "100%",
