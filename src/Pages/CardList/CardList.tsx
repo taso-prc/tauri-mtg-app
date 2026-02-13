@@ -57,12 +57,25 @@ const CardList: React.FC = () => {
     setSearchTimeout(newTimeout);
   };
 
+  const validCards = cards.filter((card) => card.image_uris?.normal);
+
   return (
     <main style={{ margin: "2rem" }}>
       <Drawer onSearch={handleSearchChange}></Drawer>
       <h1>Magic The Gathering</h1>
       {fetching ? (
         <Spinner></Spinner>
+      ) : validCards.length === 0 ? (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "2rem",
+            color: "#999",
+            fontSize: "1.1rem",
+          }}
+        >
+          <p>No cards found</p>
+        </div>
       ) : (
         <div>
           <div
@@ -73,7 +86,11 @@ const CardList: React.FC = () => {
               alignItems: "flex-start",
               gap: "0.5rem",
             }}
-          ></div>
+          >
+            <span style={{ color: "#666", fontSize: "0.9rem" }}>
+              {validCards.length} card{validCards.length !== 1 ? "s" : ""} found
+            </span>
+          </div>
           <div
             className="cards-container"
             style={{
@@ -82,17 +99,15 @@ const CardList: React.FC = () => {
               gap: "1rem",
             }}
           >
-            {cards.map((card, index) =>
-              card.image_uris?.normal ? (
-                <Card
-                  key={`${card.name}-${index}`}
-                  title={card.name}
-                  imageUrl={card.image_uris.normal}
-                  foil={card.foil}
-                  enableFoilEffect={config.enableFoilEffect}
-                />
-              ) : null,
-            )}
+            {validCards.map((card, index) => (
+              <Card
+                key={`${card.name}-${index}`}
+                title={card.name}
+                imageUrl={card.image_uris.normal}
+                foil={card.foil}
+                enableFoilEffect={config.enableFoilEffect}
+              />
+            ))}
           </div>
         </div>
       )}
