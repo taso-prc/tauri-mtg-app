@@ -1,21 +1,27 @@
-use tauri_plugin_http::reqwest;
-use std::fs;
 use crate::models::{Card, Config, ScryfallListResponse};
+use serde::Deserialize;
+use serde_json::Number;
+use std::{fs, path::PathBuf};
+use tauri_plugin_http::reqwest;
+use tauri::{AppHandle, Manager};
+use sha2::{Digest, Sha256};
+use base64::{Engine as _, engine::general_purpose};
 
 // load cnf.json file
 fn load_config() -> Result<Config, String> {
     let config_content = fs::read_to_string("cnf.json").map_err(|e| e.to_string())?;
     let config: Config = serde_json::from_str(&config_content).map_err(|e| e.to_string())?;
-    
+
     Ok(config)
 }
 
 // Fetch default set of cards (Final Fantasy).
 #[tauri::command]
 pub async fn fetch_cards() -> Result<Vec<Card>, String> {
+    let client = reqwest::Client::new();
     let config = load_config()?;
     let request_url = format!("{}/cards/search?q=set:fca", config.base_path);
-    let client = reqwest::Client::new();
+
     let response = client
         .get(&request_url)
         .header("User-Agent", "TauriMTGApp/1.0")
@@ -26,19 +32,35 @@ pub async fn fetch_cards() -> Result<Vec<Card>, String> {
         .text()
         .await
         .map_err(|e| e.to_string())?;
-    
+
     let api_response: ScryfallListResponse = serde_json::from_str(&response)
         .map_err(|e| format!("Failed to parse response: {}. Response: {}", e, response))?;
 
-    api_response.data.ok_or_else(|| format!("No data in response: {}", api_response.details.unwrap_or_default()))
+    api_response.data.ok_or_else(|| {
+        format!(
+            "No data in response: {}",
+            api_response.details.unwrap_or_default()
+        )
+    })
 }
 
-// Fetch cards using fuzzy search by partial name.
+#[derive(Debug, Deserialize)]
+pub struct QP {
+    pub searchString: String,
+    pub power: Number,
+}
+
+/// Fetch cards using fulltext search system.
+/// https://scryfall.com/docs/api/cards/search
 #[tauri::command]
-pub async fn fetch_cards_by_partial_name(partial_name: &str) -> Result<Vec<Card>, String> {
-    let config = load_config()?;
-    let request_url = format!("{}/cards/search?q={}", config.base_path, partial_name);
+pub async fn fetch_cards_by_partial_name(query_parameters: QP) -> Result<Vec<Card>, String> {
     let client = reqwest::Client::new();
+    let config = load_config()?;
+    let request_url = format!(
+        "{}/cards/search?q={}+pow%3D{} ",
+        config.base_path, query_parameters.searchString, query_parameters.power
+    );
+
     let response = client
         .get(&request_url)
         .header("User-Agent", "TauriMTGApp/1.0")
@@ -49,9 +71,90 @@ pub async fn fetch_cards_by_partial_name(partial_name: &str) -> Result<Vec<Card>
         .text()
         .await
         .map_err(|e| e.to_string())?;
-    
+
     let api_response: ScryfallListResponse = serde_json::from_str(&response)
         .map_err(|e| format!("Failed to parse response: {}. Response: {}", e, response))?;
 
-    api_response.data.ok_or_else(|| format!("No data in response: {}", api_response.details.unwrap_or_default()))
+    api_response.data.ok_or_else(|| {
+        format!(
+            "No data in response: {}",
+            api_response.details.unwrap_or_default()
+        )
+    })
+}
+
+#[tauri::command]
+pub async fn get_cached_image(app: AppHandle, url: String) -> Result<String, String> {
+    println!("get_cached_image called with URL: {}", url);
+    let cache_dir = app.path().app_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("cache")
+        .join("images");
+
+    fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
+
+    // Determine file extension from URL
+    let extension = if url.contains(".jpg") || url.contains("format=image") {
+        "jpg"
+    } else if url.contains(".png") {
+        "png"
+    } else {
+        "jpg" // default to jpg for Scryfall images
+    };
+
+    // Hash URL → filename with proper extension
+    let mut hasher = Sha256::new();
+    hasher.update(url.as_bytes());
+    let filename = format!("{:x}.{}", hasher.finalize(), extension);
+
+    let path: PathBuf = cache_dir.join(filename);
+    println!("Cache path: {:?}", path);
+
+    // If file doesn't exist, download and save it
+    if !path.exists() {
+        println!("File not in cache, downloading from: {}", url);
+        
+        let client = reqwest::Client::new();
+        let response = client
+            .get(&url)
+            .header("User-Agent", "TauriMTGApp/1.0")
+            .send()
+            .await
+            .map_err(|e| format!("Failed to download image: {}", e))?;
+
+        if !response.status().is_success() {
+            return Err(format!("Failed to download image, status: {}", response.status()));
+        }
+
+        let bytes = response
+            .bytes()
+            .await
+            .map_err(|e| format!("Failed to read image bytes: {}", e))?;
+
+        fs::write(&path, bytes)
+            .map_err(|e| format!("Failed to save image to cache: {}", e))?;
+
+        println!("Image saved to cache: {:?}", path);
+    } else {
+        println!("Image found in cache");
+    }
+
+    // Read the image file and convert to base64 data URL
+    let image_bytes = fs::read(&path)
+        .map_err(|e| format!("Failed to read cached image: {}", e))?;
+    
+    let base64_data = general_purpose::STANDARD.encode(&image_bytes);
+    
+    // Determine MIME type from extension
+    let mime_type = if extension == "png" {
+        "image/png"
+    } else {
+        "image/jpeg"
+    };
+    
+    let data_url = format!("data:{};base64,{}", mime_type, base64_data);
+    
+    println!("Returning base64 data URL with {} bytes", image_bytes.len());
+
+    Ok(data_url)
 }

@@ -1,0 +1,71 @@
+/* Drawer container */
+.drawer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: fixed;
+  background-color: #000000cf;
+  border-radius: 6px 0px 0px 6px;
+  top: 0;
+  right: 0;
+  width: 20%;
+  height: 100vh;
+  z-index: 100;
+  transform: translateX(100%); /* start off-screen */
+  opacity: 0;
+  padding: 0em 0.5em;
+  transition:
+    transform 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+  > h3 {
+    margin-left: 1em;
+  }
+  > input {
+    width: -webkit-fill-available;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    background-color: #1a1a1a;
+    color: #fff;
+  }
+}
+
+/* Open state */
+.drawer-open {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Drawer handle (hamburger) */
+.drawer-handle {
+  position: fixed;
+  top: 30%;
+  right: 5px;
+  width: 2rem;
+  height: 2rem;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.drawer-handle:hover {
+  color: #777;
+}
+
+/* Drawer close button */
+.drawer-close {
+  width: 100%;
+  text-align: center;
+  height: 2rem;
+  position: absolute;
+  bottom: 5px;
+  cursor: pointer;
+  color: #fff;
+  transition: color 0.2s ease;
+}
+
+.drawer-close:hover {
+  color: #ff5555;
+}

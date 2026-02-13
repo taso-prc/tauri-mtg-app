@@ -1,20 +1,17 @@
-
-
 /*Card*/
-.card {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
+.card,
 .card-foil {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .card-foil::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -31,12 +28,12 @@
   opacity: 1;
   animation: foil-shimmer 10s infinite linear;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
   mix-blend-mode: screen;
 }
 
 .card-foil::after {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   left: -50%;
@@ -51,7 +48,7 @@
   opacity: 1;
   animation: foil-glare 2.5s infinite linear;
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
 }
 
 @keyframes foil-shimmer {
@@ -77,10 +74,14 @@
 
 .card-foil img {
   position: relative;
-  z-index: 0;
+  z-index: 1;
 }
 
 .card-foil p {
   position: relative;
   z-index: 3;
+}
+
+.card-container {
+  perspective: 500px; /* distance from the viewer for 3D effect */
 }

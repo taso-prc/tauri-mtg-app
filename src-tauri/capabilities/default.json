@@ -9,6 +9,24 @@
     "core:default",
     "opener:default",
     "http:default",
-    "core:window:allow-maximize"
+    "core:window:allow-maximize",
+    "core:path:default",
+    "fs:default",
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [{ "path": "$APPDATA/cache/images/*" }]
+    },
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [{ "path": "$APPDATA/cache/images/*" }]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [{ "path": "$APPDATA/cache/**" }]
+    },
+    {
+      "identifier": "fs:allow-read-file",
+      "allow": [{ "path": "$APPDATA/cache/images/*" }]
+    }
   ]
 }
