@@ -46,7 +46,7 @@ pub async fn fetch_cards() -> Result<Vec<Card>, String> {
 
 #[derive(Debug, Deserialize)]
 pub struct QP {
-    pub searchString: String,
+    pub search_string: String,
     pub power: Option<Number>,
     pub colors: Option<Vec<String>>,
 }
@@ -59,7 +59,7 @@ pub async fn fetch_cards_by_parameters(query_parameters: QP) -> Result<Vec<Card>
     let config = load_config()?;
     let mut request_url = format!(
         "{}/cards/search?q={}",
-        config.base_path, query_parameters.searchString
+        config.base_path, query_parameters.search_string
     );
 
     // Check if power is present and is an integer, append to request_url: +pow%3D{}
