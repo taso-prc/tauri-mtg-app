@@ -14,7 +14,7 @@ interface Drawer {
 }
 
 export interface QueryParameters {
-  searchString: string;
+  search_string: string;
   power?: number;
   colors?: string[];
 }
@@ -31,7 +31,7 @@ const manaIcons: { [key: string]: string } = {
 const Drawer: React.FC<Drawer> = ({ onSearch }) => {
   const [visible, setVisible] = useState<boolean>(false);
   const [queryParameters, setQueryParameters] = useState<QueryParameters>({
-    searchString: "",
+    search_string: "",
     power: undefined,
     colors: [],
   });
@@ -83,11 +83,11 @@ const Drawer: React.FC<Drawer> = ({ onSearch }) => {
           className="search-input"
           type="text"
           placeholder="Search cards..."
-          value={queryParameters.searchString}
+          value={queryParameters.search_string}
           onChange={(e) => {
             const newQueryParameters = {
               ...queryParameters,
-              searchString: e.target.value,
+              search_string: e.target.value,
             };
             setQueryParameters(newQueryParameters);
             onSearch(newQueryParameters);
