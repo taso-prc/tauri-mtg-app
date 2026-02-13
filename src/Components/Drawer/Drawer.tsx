@@ -1,6 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./Drawer.css";
 import { Menu, XmarkCircle } from "iconoir-react";
+import { manatypes } from "../../manatypes";
+import manaWhite from "../../assets/mana_white.svg";
+import manaBlue from "../../assets/mana_blue.svg";
+import manaBlack from "../../assets/mana_black.svg";
+import manaRed from "../../assets/mana_red.svg";
+import manaGreen from "../../assets/mana_green.svg";
+import manaColorless from "../../assets/mana_colorless.svg";
 
 interface Drawer {
   onSearch: any;
@@ -9,13 +16,24 @@ interface Drawer {
 export interface QueryParameters {
   searchString: string;
   power?: number;
+  colors?: string[];
 }
+
+const manaIcons: { [key: string]: string } = {
+  White: manaWhite,
+  Blue: manaBlue,
+  Black: manaBlack,
+  Red: manaRed,
+  Green: manaGreen,
+  Colorless: manaColorless,
+};
 
 const Drawer: React.FC<Drawer> = ({ onSearch }) => {
   const [visible, setVisible] = useState<boolean>(false);
   const [queryParameters, setQueryParameters] = useState<QueryParameters>({
     searchString: "",
     power: undefined,
+    colors: [],
   });
 
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -41,6 +59,19 @@ const Drawer: React.FC<Drawer> = ({ onSearch }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [visible]);
+
+  const handleColorChange = (color: string, isChecked: boolean) => {
+    const newColors = isChecked
+      ? [...(queryParameters.colors || []), color]
+      : (queryParameters.colors || []).filter((c) => c !== color);
+
+    const newQueryParameters = {
+      ...queryParameters,
+      colors: newColors.length > 0 ? newColors : undefined,
+    };
+    setQueryParameters(newQueryParameters);
+    onSearch(newQueryParameters);
+  };
 
   return (
     <div ref={drawerRef}>
@@ -78,6 +109,24 @@ const Drawer: React.FC<Drawer> = ({ onSearch }) => {
             onSearch(newQueryParameters);
           }}
         />
+        <label>Mana Colors</label>
+        <div className="mana-colors-container">
+          {manatypes.map((manatype) => (
+            <label key={manatype.color} className="mana-checkbox">
+              <input
+                type="checkbox"
+                checked={queryParameters.colors?.includes(manatype.color) || false}
+                onChange={(e) => handleColorChange(manatype.color, e.target.checked)}
+              />
+              <img
+                src={manaIcons[manatype.color]}
+                alt={manatype.color}
+                className="mana-icon"
+                title={manatype.color}
+              />
+            </label>
+          ))}
+        </div>
         <XmarkCircle
           className="drawer-close"
           style={{

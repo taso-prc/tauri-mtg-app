@@ -48,6 +48,7 @@ pub async fn fetch_cards() -> Result<Vec<Card>, String> {
 pub struct QP {
     pub searchString: String,
     pub power: Option<Number>,
+    pub colors: Option<Vec<String>>,
 }
 
 /// Fetch cards using fulltext search system.
@@ -67,7 +68,20 @@ pub async fn fetch_cards_by_parameters(query_parameters: QP) -> Result<Vec<Card>
             request_url.push_str(&format!("+pow%3D{}", power.as_i64().unwrap()));
         }
     }
-    println!("Request URL: {}", request_url);
+
+    // Handle mana colors if present, append to request_url: +c%3A{} for each color
+    if query_parameters.colors.is_some() {
+        let colors = query_parameters.colors.as_ref().unwrap();
+        if !colors.is_empty() {
+            let color_query = colors
+                .iter()
+                .map(|c| format!("c%3A{}", c.to_lowercase()))
+                .collect::<Vec<String>>()
+                .join("+");
+            request_url.push_str(&format!("+{}", color_query));
+        }
+    }
+
     let response = client
         .get(&request_url)
         .header("User-Agent", "TauriMTGApp/1.0")
