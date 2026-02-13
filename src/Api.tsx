@@ -11,7 +11,7 @@ export async function loadCards(): Promise<Card[]> {
 export async function loadCardsByPartialName(
   queryParameters: QueryParameters,
 ): Promise<Card[]> {
-  const response = await invoke<Card[]>("fetch_cards_by_partial_name", {
+  const response = await invoke<Card[]>("fetch_cards_by_parameters", {
     queryParameters: { ...queryParameters },
   });
 

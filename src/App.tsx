@@ -5,10 +5,12 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { loadCards, loadCardsByPartialName } from "./Api";
 import Drawer, { QueryParameters } from "./Components/Drawer/Drawer";
 import Spinner from "./Components/Spinner/Spinner";
+import config from "../src-tauri/cnf.json";
+
 const appWindow = await getCurrentWindow();
 await appWindow.maximize();
 
-function App() {
+const App: React.FC = () => {
   // Hooks
   const [cards, setCards] = useState<any[]>([]);
   const [searchTimeout, setSearchTimeout] = useState<number | null>(null);
@@ -87,6 +89,7 @@ function App() {
                   title={card.name}
                   imageUrl={card.image_uris.normal}
                   foil={card.foil}
+                  enableFoilEffect={config.enableFoilEffect}
                 />
               ) : null,
             )}
@@ -95,6 +98,6 @@ function App() {
       )}
     </main>
   );
-}
+};
 
 export default App;

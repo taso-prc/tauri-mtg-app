@@ -1,3 +1,4 @@
 {
-  "basePath": "https://api.scryfall.com"
+  "basePath": "https://api.scryfall.com",
+  "enableFoilEffect": false
 }
